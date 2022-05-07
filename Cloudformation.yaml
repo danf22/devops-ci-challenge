@@ -1,0 +1,523 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ""
+Parameters:
+  CodeBuildProjectName:
+    Description: Devops-Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: devops-ci-challenge
+Resources:
+    IAMManagedPolicy:
+        Type: "AWS::IAM::ManagedPolicy"
+        Properties:
+            ManagedPolicyName: !Ref IAMRole
+            Path: "/service-role/"
+            PolicyDocument: |
+                {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "iam:PassRole"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow",
+                            "Condition": {
+                                "StringEqualsIfExists": {
+                                    "iam:PassedToService": [
+                                        "cloudformation.amazonaws.com",
+                                        "elasticbeanstalk.amazonaws.com",
+                                        "ec2.amazonaws.com",
+                                        "ecs-tasks.amazonaws.com"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Action": [
+                                "codecommit:CancelUploadArchive",
+                                "codecommit:GetBranch",
+                                "codecommit:GetCommit",
+                                "codecommit:GetRepository",
+                                "codecommit:GetUploadArchiveStatus",
+                                "codecommit:UploadArchive"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "codedeploy:CreateDeployment",
+                                "codedeploy:GetApplication",
+                                "codedeploy:GetApplicationRevision",
+                                "codedeploy:GetDeployment",
+                                "codedeploy:GetDeploymentConfig",
+                                "codedeploy:RegisterApplicationRevision"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "codestar-connections:UseConnection"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "elasticbeanstalk:*",
+                                "ec2:*",
+                                "elasticloadbalancing:*",
+                                "autoscaling:*",
+                                "cloudwatch:*",
+                                "s3:*",
+                                "sns:*",
+                                "cloudformation:*",
+                                "rds:*",
+                                "sqs:*",
+                                "ecs:*"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "lambda:InvokeFunction",
+                                "lambda:ListFunctions"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "opsworks:CreateDeployment",
+                                "opsworks:DescribeApps",
+                                "opsworks:DescribeCommands",
+                                "opsworks:DescribeDeployments",
+                                "opsworks:DescribeInstances",
+                                "opsworks:DescribeStacks",
+                                "opsworks:UpdateApp",
+                                "opsworks:UpdateStack"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "cloudformation:CreateStack",
+                                "cloudformation:DeleteStack",
+                                "cloudformation:DescribeStacks",
+                                "cloudformation:UpdateStack",
+                                "cloudformation:CreateChangeSet",
+                                "cloudformation:DeleteChangeSet",
+                                "cloudformation:DescribeChangeSet",
+                                "cloudformation:ExecuteChangeSet",
+                                "cloudformation:SetStackPolicy",
+                                "cloudformation:ValidateTemplate"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "codebuild:BatchGetBuilds",
+                                "codebuild:StartBuild",
+                                "codebuild:BatchGetBuildBatches",
+                                "codebuild:StartBuildBatch"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "devicefarm:ListProjects",
+                                "devicefarm:ListDevicePools",
+                                "devicefarm:GetRun",
+                                "devicefarm:GetUpload",
+                                "devicefarm:CreateUpload",
+                                "devicefarm:ScheduleRun"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "servicecatalog:ListProvisioningArtifacts",
+                                "servicecatalog:CreateProvisioningArtifact",
+                                "servicecatalog:DescribeProvisioningArtifact",
+                                "servicecatalog:DeleteProvisioningArtifact",
+                                "servicecatalog:UpdateProduct"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "cloudformation:ValidateTemplate"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "ecr:DescribeImages"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "states:DescribeExecution",
+                                "states:DescribeStateMachine",
+                                "states:StartExecution"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "appconfig:StartDeployment",
+                                "appconfig:StopDeployment",
+                                "appconfig:GetDeployment"
+                            ],
+                            "Resource": "*"
+                        }
+
+                    ],
+                    "Version": "2012-10-17"
+                }
+
+    IAMRole:
+        Type: "AWS::IAM::Role"
+        Properties:
+            Path: "/service-role/"
+            RoleName: !Sub "AWSCodePipelineServiceRole-${AWS::Region}-devops-ci-challenge"
+            AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"codepipeline.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+            MaxSessionDuration: 3600
+            ManagedPolicyArns: 
+              - !Sub "arn:aws:iam::aws:policy/AWSCodePipelineFullAccess"
+              - !Sub "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+              - !Sub "arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess"
+
+    IAMManagedPolicy2:
+        Type: "AWS::IAM::ManagedPolicy"
+        Properties:
+            ManagedPolicyName: !Sub "CodeBuildBasePolicy-devops-ci-challenge-${AWS::Region}"
+            Path: "/service-role/"
+            PolicyDocument: !Sub |
+                {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Resource": [
+                                "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/devops-ci-challenge",
+                                "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/devops-ci-challenge:*"
+                            ],
+                            "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents"
+                            ]
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Resource": [
+                                "arn:aws:s3:::codepipeline-${AWS::Region}-*"
+                            ],
+                            "Action": [
+                                "s3:PutObject",
+                                "s3:GetObject",
+                                "s3:GetObjectVersion",
+                                "s3:GetBucketAcl",
+                                "s3:GetBucketLocation"
+                            ]
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "codebuild:CreateReportGroup",
+                                "codebuild:CreateReport",
+                                "codebuild:UpdateReport",
+                                "codebuild:BatchPutTestCases",
+                                "codebuild:BatchPutCodeCoverages"
+                            ],
+                            "Resource": [
+                                "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/devops-ci-challenge-*"
+                            ]
+                        }
+                    ]
+                }
+
+    CodePipelinePipeline:
+        Type: "AWS::CodePipeline::Pipeline"
+        Properties:
+            Name: "devops-ci-challenge"
+            RoleArn: !GetAtt IAMRole.Arn
+            ArtifactStore: 
+                Location: !Ref PipelineArtifactsBucket
+                Type: "S3"
+            Stages: 
+              - 
+                Name: "Source"
+                Actions: 
+                  - 
+                    Name: "Source"
+                    ActionTypeId: 
+                        Category: "Source"
+                        Owner: "ThirdParty"
+                        Provider: "GitHub"
+                        Version: "1"
+                    Configuration: 
+                        Branch: "master"
+                        OAuthToken: "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"
+                        Owner: "danf22"
+                        PollForSourceChanges: "false"
+                        Repo: "devops-ci-challenge"
+                    OutputArtifacts: 
+                      - 
+                        Name: "SourceArtifact"
+                    Region: !Ref AWS::Region
+                    Namespace: "SourceVariables"
+                    RunOrder: 1
+              - 
+                Name: "Build"
+                Actions: 
+                  - 
+                    Name: "Build"
+                    ActionTypeId: 
+                        Category: "Build"
+                        Owner: "AWS"
+                        Provider: "CodeBuild"
+                        Version: "1"
+                    Configuration: 
+                        ProjectName: "devops-ci-challenge"
+                    InputArtifacts: 
+                      - 
+                        Name: "SourceArtifact"
+                    OutputArtifacts: 
+                      - 
+                        Name: "BuildArtifact"
+                    Region: !Ref AWS::Region
+                    Namespace: "BuildVariables"
+                    RunOrder: 1
+
+    CodePipelineWebhook:
+        Type: "AWS::CodePipeline::Webhook"
+        Properties:
+            Name: "devopscichallenge--Source--danf22devopscichallenge--1000891769"
+            TargetPipeline: "devops-ci-challenge"
+            TargetAction: "Source"
+            TargetPipelineVersion: 1
+            Filters: 
+              - JsonPath: "$.ref"
+                MatchEquals: refs/heads/master
+            Authentication: "GITHUB_HMAC"
+            AuthenticationConfiguration: 
+                SecretToken: "42333509511342400056895784001345936426634005887772930531546612356157369335485121479363593834282776"
+
+    IAMRole2:
+        Type: "AWS::IAM::Role"
+        Properties:
+            Path: "/service-role/"
+            RoleName: "codebuild-devops-ci-challenge-service-role"
+            AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"codebuild.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+            MaxSessionDuration: 3600
+            ManagedPolicyArns: 
+              - !Ref IAMManagedPolicy2
+              - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+    PipelineArtifactsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        VersioningConfiguration:
+          Status: Enabled
+    ApplicationBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        WebsiteConfiguration:
+          IndexDocument: "index.html"
+    TheBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref ApplicationBucket
+        PolicyDocument:
+          Statement:
+            -
+              Action:
+                - s3:GetObject
+              Effect: Allow
+              Resource: !Join [ "", [ "arn:aws:s3:::", !Ref ApplicationBucket, "/*" ] ]
+              Principal:
+                CanonicalUser: !GetAtt CloudFrontCloudFrontOriginAccessIdentity.S3CanonicalUserId
+    CodeBuildProject:
+        Type: "AWS::CodeBuild::Project"
+        Properties:
+            Name: "devops-ci-challenge"
+            Source: 
+                BuildSpec: |
+                    version: 0.2
+                    phases:
+                      install:
+                        runtime-versions:
+                          nodejs: latest
+                        commands:
+                          - npm install 
+                          - npm install --save-dev --save-exact prettier
+                      build:
+                        commands:
+                          - npm run prettier
+                          - CI=true npm run test
+                          - npm run build
+                      post_build:
+                        commands:
+                          - aws s3 sync build/ s3://$ApplicationBucket --delete
+                InsecureSsl: false
+                Type: "CODEPIPELINE"
+            Artifacts: 
+                EncryptionDisabled: false
+                Name: "devops-ci-challenge"
+                Packaging: "NONE"
+                Type: "CODEPIPELINE"
+            Cache: 
+                Type: "NO_CACHE"
+            Environment:
+                EnvironmentVariables:
+                  - Name: ApplicationBucket
+                    Value: !Ref ApplicationBucket 
+                ComputeType: "BUILD_GENERAL1_SMALL"
+                Image: "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+                ImagePullCredentialsType: "CODEBUILD"
+                PrivilegedMode: false
+                Type: "LINUX_CONTAINER"
+            ServiceRole: !Ref CloudFormationCodeBuildServiceRole
+            TimeoutInMinutes: 60
+            QueuedTimeoutInMinutes: 480
+            EncryptionKey: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3"
+            BadgeEnabled: false
+            LogsConfig: 
+                CloudWatchLogs: 
+                    Status: "ENABLED"
+                S3Logs: 
+                    Status: "DISABLED"
+                    EncryptionDisabled: false
+            Visibility: "PRIVATE"
+    CloudFormationCodeBuildServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        Path: /
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - codebuild.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: !Sub ${CodeBuildProjectName}-codebuild-base-policy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Resource:
+                    - "*"
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                - Effect: Allow
+                  Resource:
+                    - "*"
+                  Action:
+                    - s3:ListBucket
+                    - s3:PutObject
+                    - s3:GetObject
+                    - s3:GetObjectVersion
+                    - s3:GetBucketAcl
+                    - s3:GetBucketLocation
+          - PolicyName: !Sub ${CodeBuildProjectName}-codebuild-vpc-policy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Resource:
+                    - "*"
+                  Action:
+                    - ec2:CreateNetworkInterface
+                    - ec2:DescribeDhcpOptions
+                    - ec2:DescribeNetworkInterfaces
+                    - ec2:DeleteNetworkInterface
+                    - ec2:DescribeSubnets
+                    - ec2:DescribeSecurityGroups
+                    - ec2:DescribeVpcs
+                - Effect: Allow
+                  Resource:
+                    - !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*
+                  Action:
+                    - ec2:CreateNetworkInterfacePermission
+          - PolicyName: !Sub ${CodeBuildProjectName}-ssm-parameterstore-policy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Resource:
+                    - "*"
+                  Action:
+                    - ssm:DescribeParameters
+                - Effect: Allow
+                  Resource:
+                    - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+                  Action:
+                    - ssm:GetParameters
+    CloudFrontDistribution:
+        Type: "AWS::CloudFront::Distribution"
+        DependsOn: ApplicationBucket
+        Properties:
+            DistributionConfig: 
+                Origins: 
+                  - 
+                    ConnectionAttempts: 3
+                    ConnectionTimeout: 10
+                    DomainName: !Join [ "", [ !Ref ApplicationBucket, ".s3.amazonaws.com" ] ]
+                    Id: !Sub ApplicationBucket
+                    OriginPath: ""
+                    S3OriginConfig: 
+                        OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontCloudFrontOriginAccessIdentity}"
+                OriginGroups: 
+                    Quantity: 0
+                DefaultCacheBehavior: 
+                    AllowedMethods: 
+                      - "HEAD"
+                      - "GET"
+                    CachedMethods: 
+                      - "HEAD"
+                      - "GET"
+                    Compress: true
+                    CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+                    SmoothStreaming: false
+                    TargetOriginId: !Sub ApplicationBucket
+                    ViewerProtocolPolicy: "allow-all"
+                Comment: ""
+                PriceClass: "PriceClass_All"
+                Enabled: true
+                ViewerCertificate: 
+                    CloudFrontDefaultCertificate: true
+                    MinimumProtocolVersion: "TLSv1"
+                Restrictions: 
+                    GeoRestriction: 
+                        RestrictionType: "none"
+                HttpVersion: "http2"
+                DefaultRootObject: "index.html"
+                IPV6Enabled: true
+
+    CloudFrontCloudFrontOriginAccessIdentity:
+        Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
+        Properties:
+            CloudFrontOriginAccessIdentityConfig: 
+                Comment: !Sub ApplicationBucket
+Outputs:
+  DNScloudfront:
+    Value: !GetAtt CloudFrontDistribution.DomainName
