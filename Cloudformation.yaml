@@ -273,8 +273,8 @@ Resources:
                         Version: "1"
                     Configuration: 
                         Branch: "master"
-                        OAuthToken: "xxxxxxxx"
-                        Owner: "xxx"
+                        OAuthToken: "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"
+                        Owner: "danf22"
                         PollForSourceChanges: "true"
                         Repo: "devops-ci-challenge"
                     OutputArtifacts: 
@@ -304,16 +304,6 @@ Resources:
                     Region: !Ref AWS::Region
                     Namespace: "BuildVariables"
                     RunOrder: 1
-    IAMRole2:
-        Type: "AWS::IAM::Role"
-        Properties:
-            Path: "/service-role/"
-            RoleName: "codebuild-devops-ci-challenge-service-role"
-            AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"codebuild.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
-            MaxSessionDuration: 3600
-            ManagedPolicyArns: 
-              - !Ref IAMManagedPolicy2
-              - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
     PipelineArtifactsBucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -423,26 +413,6 @@ Resources:
                     - s3:GetObjectVersion
                     - s3:GetBucketAcl
                     - s3:GetBucketLocation
-          - PolicyName: !Sub ${CodeBuildProjectName}-codebuild-vpc-policy
-            PolicyDocument:
-              Version: 2012-10-17
-              Statement:
-                - Effect: Allow
-                  Resource:
-                    - "*"
-                  Action:
-                    - ec2:CreateNetworkInterface
-                    - ec2:DescribeDhcpOptions
-                    - ec2:DescribeNetworkInterfaces
-                    - ec2:DeleteNetworkInterface
-                    - ec2:DescribeSubnets
-                    - ec2:DescribeSecurityGroups
-                    - ec2:DescribeVpcs
-                - Effect: Allow
-                  Resource:
-                    - !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*
-                  Action:
-                    - ec2:CreateNetworkInterfacePermission
           - PolicyName: !Sub ${CodeBuildProjectName}-ssm-parameterstore-policy
             PolicyDocument:
               Version: 2012-10-17
