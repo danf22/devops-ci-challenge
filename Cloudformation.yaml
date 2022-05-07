@@ -275,7 +275,7 @@ Resources:
                         Branch: "master"
                         OAuthToken: "xxxxxxxx"
                         Owner: "xxx"
-                        PollForSourceChanges: "false"
+                        PollForSourceChanges: "true"
                         Repo: "devops-ci-challenge"
                     OutputArtifacts: 
                       - 
@@ -304,21 +304,6 @@ Resources:
                     Region: !Ref AWS::Region
                     Namespace: "BuildVariables"
                     RunOrder: 1
-
-    CodePipelineWebhook:
-        Type: "AWS::CodePipeline::Webhook"
-        Properties:
-            Name: "devopscichallenge"
-            TargetPipeline: "devops-ci-challenge"
-            TargetAction: "Source"
-            TargetPipelineVersion: 1
-            Filters: 
-              - JsonPath: "$.ref"
-                MatchEquals: refs/heads/master
-            Authentication: "GITHUB_HMAC"
-            AuthenticationConfiguration: 
-                SecretToken: "xxxxxx"
-
     IAMRole2:
         Type: "AWS::IAM::Role"
         Properties:
