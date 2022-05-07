@@ -273,8 +273,8 @@ Resources:
                         Version: "1"
                     Configuration: 
                         Branch: "master"
-                        OAuthToken: "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"
-                        Owner: "danf22"
+                        OAuthToken: "xxxxxx"
+                        Owner: "xxxxx"
                         PollForSourceChanges: "true"
                         Repo: "devops-ci-challenge"
                     OutputArtifacts: 
