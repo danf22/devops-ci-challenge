@@ -273,8 +273,8 @@ Resources:
                         Version: "1"
                     Configuration: 
                         Branch: "master"
-                        OAuthToken: "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"
-                        Owner: "danf22"
+                        OAuthToken: "xxxxxxxx"
+                        Owner: "xxx"
                         PollForSourceChanges: "false"
                         Repo: "devops-ci-challenge"
                     OutputArtifacts: 
@@ -308,7 +308,7 @@ Resources:
     CodePipelineWebhook:
         Type: "AWS::CodePipeline::Webhook"
         Properties:
-            Name: "devopscichallenge--Source--danf22devopscichallenge--1000891769"
+            Name: "devopscichallenge"
             TargetPipeline: "devops-ci-challenge"
             TargetAction: "Source"
             TargetPipelineVersion: 1
@@ -317,7 +317,7 @@ Resources:
                 MatchEquals: refs/heads/master
             Authentication: "GITHUB_HMAC"
             AuthenticationConfiguration: 
-                SecretToken: "42333509511342400056895784001345936426634005887772930531546612356157369335485121479363593834282776"
+                SecretToken: "xxxxxx"
 
     IAMRole2:
         Type: "AWS::IAM::Role"
