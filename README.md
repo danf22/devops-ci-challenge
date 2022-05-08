@@ -19,3 +19,15 @@ You can find a live version at the following url:
 [https://rdicidr.rderik.com](https://rdicidr.rderik.com)
 
 If you find this tool useful, you might enjoy reading my blog: [https://rderik.com](https://rderik.com)
+
+# DevOps CI/CD AWS
+
+In the file "Cloudformation.yaml" is the cloudformation to deploy the solution in AWS.
+![Diagram](https://raw.githubusercontent.com/danf22/devops-ci-challenge/master/Diagrama%20en%20blanco.png "Diagram")
+
+- Update Variables Branch of Github, Tocken And Owner.
+```
+Branch: "master"
+OAuthToken: "xxxxxx"
+Owner: "xxxxx"
+```
